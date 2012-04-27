@@ -21,8 +21,12 @@ namespace native
         static const int create = O_CREAT;
         static const int excl = O_EXCL;
         static const int truncate = O_TRUNC;
+#ifdef O_NOFOLLOW
         static const int no_follow = O_NOFOLLOW;
+#endif
+#ifdef O_DIRECTORY
         static const int directory = O_DIRECTORY;
+#endif
 #ifdef O_NOATIME
         static const int no_access_time = O_NOATIME;
 #endif

@@ -45,12 +45,12 @@ namespace native
 					[](uv_handle_t*, size_t suggested_size){
 						if(!max_alloc_size)
 						{
-							return uv_buf_t { new char[suggested_size], suggested_size };
+							return uv_buf_t { suggested_size, new char[suggested_size] };
 						}
 						else
 						{
 							auto size = max_alloc_size > suggested_size ? suggested_size : max_alloc_size;
-							return uv_buf_t { new char[size], size };
+							return uv_buf_t { size, new char[size] };
 						}
 					},
 					[](uv_stream_t* s, ssize_t nread, uv_buf_t buf){
@@ -76,7 +76,7 @@ namespace native
 
 			bool write(const char* buf, int len, std::function<void(error)> callback)
 			{
-				uv_buf_t bufs[] = { uv_buf_t { const_cast<char*>(buf), len } };
+				uv_buf_t bufs[] = { uv_buf_t { len, const_cast<char*>(buf) } };
 				callbacks::store(get()->data, native::internal::uv_cid_write, callback);
 				return uv_write(new uv_write_t, get<uv_stream_t>(), bufs, 1, [](uv_write_t* req, int status) {
 					callbacks::invoke<decltype(callback)>(req->handle->data, native::internal::uv_cid_write, status?uv_last_error(req->handle->loop):error());
@@ -86,7 +86,7 @@ namespace native
 
 			bool write(const std::string& buf, std::function<void(error)> callback)
             {
-                uv_buf_t bufs[] = { uv_buf_t { const_cast<char*>(buf.c_str()), buf.length()} };
+                uv_buf_t bufs[] = { uv_buf_t { buf.length(), const_cast<char*>(buf.c_str()) } };
                 callbacks::store(get()->data, native::internal::uv_cid_write, callback);
                 return uv_write(new uv_write_t, get<uv_stream_t>(), bufs, 1, [](uv_write_t* req, int status) {
                     callbacks::invoke<decltype(callback)>(req->handle->data, native::internal::uv_cid_write, status?uv_last_error(req->handle->loop):error());
@@ -96,7 +96,7 @@ namespace native
 
             bool write(const std::vector<char>& buf, std::function<void(error)> callback)
             {
-                uv_buf_t bufs[] = { uv_buf_t { const_cast<char*>(&buf[0]), buf.size() } };
+                uv_buf_t bufs[] = { uv_buf_t { buf.size(), const_cast<char*>(&buf[0]) } };
                 callbacks::store(get()->data, native::internal::uv_cid_write, callback);
                 return uv_write(new uv_write_t, get<uv_stream_t>(), bufs, 1, [](uv_write_t* req, int status) {
                     callbacks::invoke<decltype(callback)>(req->handle->data, native::internal::uv_cid_write, status?uv_last_error(req->handle->loop):error());
